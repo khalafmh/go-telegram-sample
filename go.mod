@@ -1,0 +1,1 @@
+module "github.com/khalafmh/go-telegram-sample"
