@@ -25,17 +25,27 @@ func main() {
 
 	log.Println("Starting handler loop")
 	for update := range updatesChan {
-		log.Printf("received message from: %v, with text: %v\n", update.Message.From.UserName, update.Message.Text)
-		if update.Message.IsCommand() {
-			log.Println("message is a command")
-			reply := tgbotapi.NewMessage(update.Message.Chat.ID, "I don't understand you")
-			_, err := bot.Send(reply)
-			if err != nil {
-				log.Println(err)
-			}
+		if update.Message == nil {
+			log.Printf("Received empty update with id %v\n", update.UpdateID)
 			continue
 		}
-		reply := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+		var reply tgbotapi.MessageConfig
+		if update.Message.IsCommand() {
+			log.Printf(
+				"Received message from: %v, with command: %v, and arguments: %v\n",
+				update.Message.From.UserName,
+				update.Message.Command(),
+				update.Message.CommandArguments(),
+			)
+			reply = tgbotapi.NewMessage(update.Message.Chat.ID, "I don't understand you")
+		} else {
+			log.Printf(
+				"Received message from: %v, with text: %v\n",
+				update.Message.From.UserName,
+				update.Message.Text,
+			)
+			reply = tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+		}
 		_, err := bot.Send(reply)
 		if err != nil {
 			log.Println(err)
